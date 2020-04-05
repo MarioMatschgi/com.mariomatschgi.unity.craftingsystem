@@ -1,0 +1,27 @@
+{
+  "name": "com.mariomatschgi.unity.craftingsystem",
+  "version": "1.0.0",
+  "displayName": "MM Crafting System",
+  "description": "Mario Elsnig's Crafting System. Used for managing crafting.",
+  "unity": "2019.1",
+  "dependencies": {
+    "com.mariomatschgi.unity.core": "https://github.com/MarioMatschgi/com.mariomatschgi.unity.core.git",
+    "com.mariomatschgi.unity.uilibrary": "https://github.com/MarioMatschgi/com.mariomatschgi.unity.uilibrary.git",
+    "com.mariomatschgi.unity.inventorysystem": "https://github.com/MarioMatschgi/com.mariomatschgi.unity.inventorysystem.git",
+    "com.unity.textmeshpro": "2.0.0"
+  },
+  "author": {
+    "name": "Mario Elsnig",
+    "email": "mariomatschgi@gmail.com",
+    "url": "http://www.mcronia.tk/"
+  },
+  "keywords": [
+    "MM",
+    "Mario",
+    "Matschgi",
+    "Elsnig",
+    "Crafting",
+    "System"
+  ],
+  "type": "system"
+}
