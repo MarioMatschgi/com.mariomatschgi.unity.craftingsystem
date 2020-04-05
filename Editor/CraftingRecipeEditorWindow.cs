@@ -28,9 +28,32 @@ namespace MM.Systems.CraftingSystem
 
         void OnGUI()
         {
+            //SerializedProperty _p = serializedObject.GetIterator();
+            //_p.NextVisible(true);
+            //DrawProperties(_p);
+
+
             SerializedProperty _p = serializedObject.GetIterator();
             _p.NextVisible(true);
-            DrawProperties(_p);
+            serializedProperty = _p;
+
+            EditorGUILayout.BeginHorizontal();
+
+            DrawSidebar(serializedProperty);
+
+            EditorGUILayout.BeginVertical("box", GUILayout.ExpandHeight(true));
+            if (selectedProperty != null)
+            {
+                DrawProperties(selectedProperty);
+            }
+            else
+            {
+                EditorGUILayout.LabelField("Select a property");
+            }
+            EditorGUILayout.EndVertical();
+
+            EditorGUILayout.EndHorizontal();
+
         }
 
         #endregion
