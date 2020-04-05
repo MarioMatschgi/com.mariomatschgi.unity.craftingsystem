@@ -13,6 +13,32 @@ public class ExtendedEditorWindow : EditorWindow
     string selectedPropertyPath;
     protected SerializedProperty selectedProperty;
 
+
+    protected virtual void OnGUI()
+    {
+        Apply();
+    }
+
+    protected void DrawSidebar(SerializedProperty _prop)
+    {
+        SerializedProperty _p = _prop;
+        EditorGUILayout.BeginVertical("box", GUILayout.MaxWidth(150), GUILayout.ExpandHeight(true));
+        while (_p.NextVisible(true))
+        {
+            if (_p.isArray && _prop.propertyType == SerializedPropertyType.Generic)
+            {
+                if (GUILayout.Button(_p.displayName))
+                {
+                    selectedPropertyPath = _p.propertyPath;
+                }
+            }
+        }
+        EditorGUILayout.EndVertical();
+
+        if (!string.IsNullOrEmpty(selectedPropertyPath))
+            selectedProperty = serializedObject.FindProperty(selectedPropertyPath);
+    }
+
     protected void DrawProperties(SerializedProperty _prop, bool _checkHasChildren = false)
     {
         string _lastPropPath = string.Empty;
@@ -44,25 +70,21 @@ public class ExtendedEditorWindow : EditorWindow
         }
     }
 
-    protected void DrawSidebar(SerializedProperty _prop)
+    protected void DrawProperty(string _propName, bool _relative)
     {
-
-        SerializedProperty _p = _prop;
-        EditorGUILayout.BeginVertical("box", GUILayout.MaxWidth(150), GUILayout.ExpandHeight(true));
-        while (_p.NextVisible(true))
+        if (_relative && serializedProperty != null)
         {
-            if (_p.isArray && _prop.propertyType == SerializedPropertyType.Generic)
-            {
-                if (GUILayout.Button(_p.displayName))
-                {
-                    selectedPropertyPath = _p.propertyPath;
-                }
-            }
+            EditorGUILayout.PropertyField(serializedProperty.FindPropertyRelative(_propName));
         }
-        EditorGUILayout.EndVertical();
+        else if (serializedObject != null)
+        {
+            EditorGUILayout.PropertyField(serializedObject.FindProperty(_propName), true);
+        }
+    }
 
-        if (!string.IsNullOrEmpty(selectedPropertyPath))
-            selectedProperty = serializedObject.FindProperty(selectedPropertyPath);
+    protected void Apply()
+    {
+        serializedObject.ApplyModifiedProperties();
     }
 }
 

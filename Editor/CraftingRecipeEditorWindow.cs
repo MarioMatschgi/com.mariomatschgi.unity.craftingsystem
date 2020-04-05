@@ -26,13 +26,14 @@ namespace MM.Systems.CraftingSystem
             window.serializedObject = new SerializedObject(_craftingRecipe);
         }
 
-        void OnGUI()
+        protected override void OnGUI()
         {
-            //SerializedProperty _p = serializedObject.GetIterator();
-            //_p.NextVisible(true);
-            //DrawProperties(_p);
+            serializedProperty = serializedObject.GetIterator();
+            serializedProperty.NextVisible(true);
 
+            DrawProperties(serializedProperty);
 
+            /*
             SerializedProperty _p = serializedObject.GetIterator();
             _p.NextVisible(true);
             serializedProperty = _p;
@@ -43,17 +44,16 @@ namespace MM.Systems.CraftingSystem
 
             EditorGUILayout.BeginVertical("box", GUILayout.ExpandHeight(true));
             if (selectedProperty != null)
-            {
                 DrawProperties(selectedProperty);
-            }
             else
-            {
-                EditorGUILayout.LabelField("Select a property");
-            }
+                EditorGUILayout.LabelField("Select an item");
             EditorGUILayout.EndVertical();
 
             EditorGUILayout.EndHorizontal();
+            */
 
+            // Call base, so all gets applyed
+            base.OnGUI();
         }
 
         #endregion
