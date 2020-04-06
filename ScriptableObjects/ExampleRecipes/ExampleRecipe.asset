@@ -22,7 +22,3 @@ MonoBehaviour:
   outElements:
   - itemPreset: {fileID: 11400000, guid: 835516e66589e422b8bfa98ded7c19f4, type: 2}
     itemAmount: 10
-  - itemPreset: {fileID: 11400000, guid: 835516e66589e422b8bfa98ded7c19f4, type: 2}
-    itemAmount: 8
-  - itemPreset: {fileID: 11400000, guid: 835516e66589e422b8bfa98ded7c19f4, type: 2}
-    itemAmount: 9
