@@ -13,12 +13,22 @@ namespace MM.Systems.CraftingSystem
         public static CraftingRecipeEditorWindow window;
 
 
+        // Private
+        Vector2 scrollPos;
+
+
         #region Callback Methodes
         /*
          *
          *  Callback Methodes
          * 
          */
+
+        [MenuItem("MM EditorWindows/Crafting recipe editor")]
+        public static void Open()
+        {
+            Open(null);
+        }
 
         public static void Open(CraftingRecipe _craftingRecipe)
         {
@@ -28,29 +38,15 @@ namespace MM.Systems.CraftingSystem
 
         protected override void OnGUI()
         {
+            if (serializedObject == null)
+                return;
+
             serializedProperty = serializedObject.GetIterator();
             serializedProperty.NextVisible(true);
 
-            DrawProperties(serializedProperty);
-
-            /*
-            SerializedProperty _p = serializedObject.GetIterator();
-            _p.NextVisible(true);
-            serializedProperty = _p;
-
-            EditorGUILayout.BeginHorizontal();
-
-            DrawSidebar(serializedProperty);
-
-            EditorGUILayout.BeginVertical("box", GUILayout.ExpandHeight(true));
-            if (selectedProperty != null)
-                DrawProperties(selectedProperty);
-            else
-                EditorGUILayout.LabelField("Select an item");
-            EditorGUILayout.EndVertical();
-
-            EditorGUILayout.EndHorizontal();
-            */
+            scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
+            DrawProperties(serializedProperty, false);
+            EditorGUILayout.EndScrollView();
 
             // Call base, so all gets applyed
             base.OnGUI();

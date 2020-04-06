@@ -12,56 +12,101 @@ public class ExtendedEditorWindow : EditorWindow
     protected SerializedObject serializedObject;
     protected SerializedProperty serializedProperty;
 
-    string selectedPropertyPath;
-    protected SerializedProperty selectedProperty;
+    List<SerializedProperty> selectedProperties;
+
+    int currentSidebarIdx;
 
 
     protected virtual void OnGUI()
     {
         Apply();
+        ResetSidebarIds();
     }
 
     protected void DrawSidebar(SerializedProperty _prop)
     {
-        SerializedProperty _p = _prop.Copy();
-        //_p.NextVisible(true);
+        if (selectedProperties == null)
+            selectedProperties = new List<SerializedProperty>();
+
+        EditorGUILayout.BeginVertical();
+
+        #region Header
+        /*
+         * Header
+         */
+
+        EditorGUILayout.BeginHorizontal("box");
+        EditorGUILayout.LabelField("Sidebar for property: " + _prop.displayName, EditorStyles.boldLabel);
+
+        if (_prop.isArray)
+        {
+            EditorGUILayout.BeginHorizontal();
+            float _tmpW = EditorGUIUtility.labelWidth;
+            EditorGUIUtility.labelWidth = 30;
+            _prop.arraySize = EditorGUILayout.IntField("Size", _prop.arraySize);
+            EditorGUIUtility.labelWidth = _tmpW;
+            EditorGUILayout.EndHorizontal();
+        }
+
+        //EditorGUILayout.IntField();
+        EditorGUILayout.EndHorizontal();
+        #endregion
+
+
+        #region Content
+        /*
+         * Content
+         */
 
         EditorGUILayout.BeginHorizontal();
 
+        #region Sidebar-Buttons
+        /*
+         * Sidebar-Buttons
+         */
+
         EditorGUILayout.BeginVertical("box", GUILayout.MaxWidth(150), GUILayout.ExpandHeight(true));
-        Debug.Log("PROP: " + _p.displayName);
-        //Debug.Log("LLL: " + _p.CountInProperty());
-        int i = 0;
-        while (_p.NextVisible(true))
+        IEnumerator _e = _prop.Copy().GetEnumerator();
+        while (_e.MoveNext())
         {
-            Debug.Log(i + " SubPROP: " + _p.displayName + " : " + _p.CountInProperty());
-            //if (_p.isArray && _prop.propertyType == SerializedPropertyType.Generic)
-            //if (_p.isArray)
-            //{
-            //Debug.Log("ArrPROP: " + _p.displayName);
-            if (GUILayout.Button(_p.displayName))
-            {
-                selectedPropertyPath = _p.propertyPath;
-            }
-            //}
-
-            i++;
+            SerializedProperty _p = (SerializedProperty)_e.Current;
+            if (_p.hasChildren)
+                if (GUILayout.Button(_p.displayName))
+                {
+                    if (selectedProperties.Count <= currentSidebarIdx)
+                        selectedProperties.Add(serializedObject.FindProperty(_p.propertyPath));
+                    else
+                        selectedProperties[currentSidebarIdx] = serializedObject.FindProperty(_p.propertyPath);
+                }
         }
-        Debug.Log("i: " + i);
         EditorGUILayout.EndVertical();
+        #endregion
 
-        // Set selected Property
-        if (!string.IsNullOrEmpty(selectedPropertyPath))
-            selectedProperty = serializedObject.FindProperty(selectedPropertyPath);
+        #region Sidebar-Content
+        /*
+         * Sidebar-Content
+         */
 
         EditorGUILayout.BeginVertical("box", GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-        if (selectedProperty == null)
-            EditorGUILayout.LabelField("SELECT");
+
+        if (selectedProperties.Count <= currentSidebarIdx || selectedProperties[currentSidebarIdx] == null)
+            EditorGUILayout.LabelField("Please select an element from the list to the left!", EditorStyles.wordWrappedLabel);
         else
-            DrawProperties(selectedProperty);
+        {
+            EditorGUILayout.LabelField("Editing: " + selectedProperties[currentSidebarIdx].displayName, EditorStyles.boldLabel);
+
+            DrawProperties(selectedProperties[currentSidebarIdx], true, false);
+        }
         EditorGUILayout.EndVertical();
+        #endregion
 
         EditorGUILayout.EndHorizontal();
+        #endregion
+
+        EditorGUILayout.EndVertical();
+
+        // Incrase Sidebar index
+        currentSidebarIdx++;
     }
 
     protected int DrawTabs<T>(int _intValue) where T : Enum
@@ -81,55 +126,64 @@ public class ExtendedEditorWindow : EditorWindow
         return _val;
     }
 
-    protected void DrawProperties(SerializedProperty _prop, bool _checkHasChildren = false)
+    protected void DrawProperties(SerializedProperty _prop, bool _useEnumerator, bool _checkHasChildren = false)
     {
         string _lastPropPath = string.Empty;
 
-        while ( (_checkHasChildren && _prop.hasVisibleChildren && _prop.NextVisible(true)) || (!_checkHasChildren && _prop.NextVisible(true)) )
+        if (_useEnumerator)
         {
-            if (_prop.isArray && _prop.propertyType == SerializedPropertyType.Generic)
+            IEnumerator _e = _prop.Copy().GetEnumerator();
+            while (_e.MoveNext())
+                if (DrawProperty(((SerializedProperty)_e.Current).propertyPath))
+                    continue;
+        }
+        else
+        {
+            while ((_checkHasChildren && _prop.hasVisibleChildren && _prop.NextVisible(true)) || (!_checkHasChildren && _prop.NextVisible(true)))
             {
-                DrawSidebar(_prop);
+                // Don't draw the ones from the dropwown normal as well
+                if (!string.IsNullOrEmpty(_lastPropPath) && _prop.propertyPath.Contains(_lastPropPath))
+                    continue;
 
+                _lastPropPath = _prop.propertyPath;
 
-                //EditorGUILayout.BeginHorizontal();
-                //_prop.isExpanded = EditorGUILayout.Foldout(_prop.isExpanded, _prop.displayName);
-                //EditorGUILayout.EndHorizontal();
-
-                //if (_prop.isExpanded)
-                //{
-                //    EditorGUI.indentLevel++;
-                //    DrawProperties(_prop, true);
-                //    EditorGUI.indentLevel--;
-                //}
-
-                continue;
+                if (DrawProperty(_prop.propertyPath))
+                    continue;
             }
-
-            // Don't draw the ones from the dropwown normal as well
-            if (!string.IsNullOrEmpty(_lastPropPath) && _prop.propertyPath.Contains(_lastPropPath))
-                continue;
-
-            _lastPropPath = _prop.propertyPath;
-            EditorGUILayout.PropertyField(_prop, true);
         }
     }
 
-    protected void DrawProperty(string _propName, bool _relative)
+    /// <summary>
+    /// Returns false if drawing was canceld by ie Sidebar
+    /// </summary>
+    /// <param name="_propName"></param>
+    /// <returns></returns>
+    protected bool DrawProperty(string _propName)
     {
-        if (_relative && serializedProperty != null)
+        if (serializedObject != null)
         {
-            EditorGUILayout.PropertyField(serializedProperty.FindPropertyRelative(_propName));
+            SerializedProperty _prop = serializedObject.FindProperty(_propName);
+            if (_prop.isArray && _prop.propertyType == SerializedPropertyType.Generic)
+            {
+                DrawSidebar(_prop);
+                return false;
+            }
         }
-        else if (serializedObject != null)
-        {
+
+        if (serializedObject != null)
             EditorGUILayout.PropertyField(serializedObject.FindProperty(_propName), true);
-        }
+
+        return true;
     }
 
     protected void Apply()
     {
         serializedObject.ApplyModifiedProperties();
+    }
+
+    void ResetSidebarIds()
+    {
+        currentSidebarIdx = 0;
     }
 }
 

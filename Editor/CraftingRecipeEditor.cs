@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.Callbacks;
 
 namespace MM.Systems.CraftingSystem
 {
@@ -19,14 +20,26 @@ namespace MM.Systems.CraftingSystem
          * 
          */
 
+        [OnOpenAsset]
+        public static bool OnOpen(int _instanceId, int _line)
+        {
+            CraftingRecipe _craftingRecipe = EditorUtility.InstanceIDToObject(_instanceId) as CraftingRecipe;
+            if (_craftingRecipe != null)
+            {
+                CraftingRecipeEditorWindow.Open(_craftingRecipe);
+
+                return true;
+            }
+
+            return false;
+        }
+
         public override void OnInspectorGUI()
         {
             if (GUILayout.Button("Open in editor window"))
             {
                 CraftingRecipeEditorWindow.Open((CraftingRecipe)target);
             }
-
-            base.OnInspectorGUI();
         }
 
         #endregion
