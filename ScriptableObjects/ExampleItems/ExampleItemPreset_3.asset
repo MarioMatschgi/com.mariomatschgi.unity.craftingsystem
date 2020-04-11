@@ -15,4 +15,4 @@ MonoBehaviour:
   name: Example Item 3
   description: This example Item 3
   sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-  stackSize: 30
+  stackSize: 300
