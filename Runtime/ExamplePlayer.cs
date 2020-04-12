@@ -55,15 +55,27 @@ namespace MM.Systems.CraftingSystem
 		{
 			// Open / Close inventory
 			if (Input.GetKeyDown(KeyCode.E))
-				inventoryUi.isInventoryOpen = !inventoryUi.isInventoryOpen;
+            {
+                inventoryUi.isInventoryOpen = !inventoryUi.isInventoryOpen;
+
+                if (craftingScreen.isCraftingScreenOpen)
+                    craftingScreen.isCraftingScreenOpen = false;
+            }
 
 			// Update hotbar index
 			if (Input.GetKeyDown(KeyCode.Tab))
-				inventoryUi.hotbarRowIdx++;
+                // Only update if crafting menue is closed
+                if (!craftingScreen.isCraftingScreenOpen)
+				    inventoryUi.hotbarRowIdx++;
 
             // Open / Close craftingScreen
             if (Input.GetKeyDown(KeyCode.C))
+            {
                 craftingScreen.isCraftingScreenOpen = !craftingScreen.isCraftingScreenOpen;
+
+                if (inventoryUi.isInventoryOpen)
+                    inventoryUi.isInventoryOpen = false;
+            }
         }
 
 		#endregion
