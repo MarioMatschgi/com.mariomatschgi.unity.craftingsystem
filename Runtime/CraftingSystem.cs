@@ -26,6 +26,73 @@ namespace MM.Systems.CraftingSystem
          *
          */
 
+        public static bool CanCraft(CraftingRecipe _craftingRecipe, params ItemData[][] _inItems)
+        {
+            // Get recipe values
+            ItemData[][] _outItems = new ItemData[_inItems.Length][];
+            for (int i = 0; i < _inItems.Length; i++)
+                for (int j = 0; j < _inItems[i].Length; j++)
+                {
+                    if (_outItems[i] == null)
+                        _outItems[i] = new ItemData[_inItems[i].Length];
+
+                    if (_inItems[i][j] == null)
+                        _outItems[i][j] = null;
+                    else if (_inItems[i][j].itemPreset == null)
+                        _outItems[i][j] = null;
+                    else
+                        _outItems[i][j] = new ItemData(_inItems[i][j].itemPreset, _inItems[i][j].itemAmount);
+                }
+
+            // Set outItems (remove recipe input elements)
+            // Iterate through all input items
+            int _amt = 0;
+            int _currIdx = 0;
+            List<ItemData> _inItemsModified = new List<ItemData>();   // Successfully found items get set to null, else amount decreases
+            foreach (ItemData _data in _craftingRecipe.inElements)
+                _inItemsModified.Add(new ItemData(_data.itemPreset, _data.itemAmount));
+
+            foreach (ItemData _inputData in _craftingRecipe.inElements)
+            {
+                foreach (ItemData[] _outDatas in _outItems)
+                    foreach (ItemData _outData in _outDatas)
+                    {
+                        // If outData is emtpy, continue
+                        if (_outData == null || _outData.itemAmount <= 0 || _outData.itemPreset == null)
+                            continue;
+
+                        // Check if outData equals inputData, if so, decrease amount
+                        if (_outData.itemPreset.Equals(_inputData.itemPreset))
+                        {
+                            // Calculate amount
+                            _amt = _outData.itemAmount - _inputData.itemAmount;
+
+                            // Set outData amount
+                            _outData.itemAmount = Mathf.Clamp(_amt, 0, _outData.itemAmount);
+
+                            // If amount less 0, the remaining should be set to modified's data
+                            if (_amt < 0)
+                                _inItemsModified[_currIdx].itemAmount = Mathf.Abs(_amt);
+                            // Else set null
+                            else
+                            {
+                                _inItemsModified[_currIdx] = null;
+
+                                goto End0;
+                            }
+                        }
+                    }
+                End0:
+                _currIdx++;
+            }
+            // If there are required items left, cancel crafting
+            _inItemsModified.RemoveMissingElements();
+            if (_inItemsModified.Count > 0)
+                return false;
+
+            return true;
+        }
+
         /// <summary>
         /// Returns the items left, null if crafting is not possible
         /// </summary>
@@ -88,10 +155,11 @@ namespace MM.Systems.CraftingSystem
             return _outItems;
         }
         /// <summary>
+        /// Trys to craft a recipe <paramref name="_craftingRecipe"/> with items <paramref name="_inItems"/> and puts eventual not in original fit items into a List <paramref name="_notFit"/>
         /// Returns the items left, null if crafting is not possible
         /// </summary>
-        /// <returns></returns>
-        public static ItemData[][] TryCrafting(CraftingRecipe _craftingRecipe, params ItemData[][] _inItems)
+        /// <returns>Returns the items left, null if crafting is not possible</returns>
+        public static ItemData[][] TryCrafting(CraftingRecipe _craftingRecipe, out List<ItemData> _notFit, params ItemData[][] _inItems)
         {
             // Get recipe values
             ItemData[][] _outItems = new ItemData[_inItems.Length][];
@@ -113,7 +181,10 @@ namespace MM.Systems.CraftingSystem
             // Iterate through all input items
             int _amt = 0;
             int _currIdx = 0;
-            List<ItemData> _inItemsModified = new List<ItemData>(_craftingRecipe.inElements);   // Successfully found items get set to null, else amount decreases
+            List<ItemData> _inItemsModified = new List<ItemData>();   // Successfully found items get set to null, else amount decreases
+            foreach (ItemData _data in _craftingRecipe.inElements)
+                _inItemsModified.Add(new ItemData(_data.itemPreset, _data.itemAmount));
+
             foreach (ItemData _inputData in _craftingRecipe.inElements)
             {
                 foreach (ItemData[] _outDatas in _outItems)
@@ -137,15 +208,24 @@ namespace MM.Systems.CraftingSystem
                                 _inItemsModified[_currIdx].itemAmount = Mathf.Abs(_amt);
                             // Else set null
                             else
+                            {
                                 _inItemsModified[_currIdx] = null;
+
+                                goto End0;
+                            }
                         }
                     }
+                End0:
                 _currIdx++;
             }
             // If there are required items left, cancel crafting
             _inItemsModified.RemoveMissingElements();
             if (_inItemsModified.Count > 0)
+            {
+                _notFit = new List<ItemData>();
+
                 return null;
+            }
 
             // Set outItems (Add recipe output elements)
             // Try to stack
@@ -226,6 +306,12 @@ namespace MM.Systems.CraftingSystem
             End2:
                 continue;
             }
+
+            // Put the still remaining items in notFit
+            _outItemsModified.RemoveMissingElements();
+            _notFit = new List<ItemData>();
+            foreach (ItemData _data in _outItemsModified)
+                _notFit.Add(new ItemData(_data.itemPreset, _data.itemAmount));
 
             // Return result
             return _outItems;
