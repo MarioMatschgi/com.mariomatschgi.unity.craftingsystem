@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using MM.Systems.InventorySystem;
 using System.Linq;
+using MM.Libraries.UI;
 
 namespace MM.Systems.CraftingSystem
 {
@@ -15,7 +16,27 @@ namespace MM.Systems.CraftingSystem
         public List<CraftingRecipe> craftingRecipes;
         [Space]
         public int interactorId;
-        public IInteractor interactor;
+        public ICraftor craftor;
+        bool m_isInventoryOpen;
+        public bool isCraftingScreenOpen
+        {
+            get
+            {
+                return m_isInventoryOpen;
+            }
+            set
+            {
+                m_isInventoryOpen = value;
+
+                UpdateCraftingScreenVisibility(m_isInventoryOpen);
+            }
+        }
+        [Space]
+        public float animationTime = .1f;
+        public bool isFinishedAnimating;
+
+        [Header("Outlets")]
+        public CanvasGroup content;
 
         [Header("Prefabs")]
         public GameObject craftingCellPrefab;
@@ -54,6 +75,20 @@ namespace MM.Systems.CraftingSystem
 
         void Awake()
         {
+            // Setup variables
+            IEnumerable<ICraftor> _enumerable = FindObjectsOfType<MonoBehaviour>().OfType<ICraftor>();
+            foreach (ICraftor _craftor in _enumerable)
+                if (_craftor.interactorId == interactorId)
+                {
+                    craftor = _craftor;
+                    craftor.craftingScreen = this;
+
+                    break;
+                }
+            isFinishedAnimating = true;
+            content.alpha = 0;
+
+            // Setup CraftingCells
             CraftingCellUi[] _craftingCells = craftingCellPanel.GetComponentsInChildren<CraftingCellUi>();
             int i;
             for (i = 0; i < craftingRecipes.Count; i++)
@@ -67,15 +102,6 @@ namespace MM.Systems.CraftingSystem
             // Destroy remaining cells
             for (int j = i; j < craftingCellPanel.childCount; j++)
                 Destroy(craftingCellPanel.GetChild(j).gameObject);
-
-            // Setup interactor
-            IEnumerable<IInteractor> _enumerable = FindObjectsOfType<MonoBehaviour>().OfType<IInteractor>();
-            foreach (IInteractor _interactor in _enumerable)
-                if (_interactor.interactorId == interactorId)
-                {
-                    interactor = _interactor;
-                    break;
-                }
         }
 
         void Start()
@@ -97,6 +123,18 @@ namespace MM.Systems.CraftingSystem
          *
          */
 
+        public void UpdateCraftingScreenVisibility(bool _shouldOpen)
+        {
+            if (!isFinishedAnimating)
+                return;
+
+            // Manage Hiding/Showing of the CraftingScreen
+            if (_shouldOpen)
+                StartCoroutine(OpenCraftingScreen());
+            else
+                StartCoroutine(CloseCraftingScreen());
+        }
+
         #endregion
 
         #region Helper Methodes
@@ -105,6 +143,60 @@ namespace MM.Systems.CraftingSystem
          *  Helper Methodes
          * 
          */
+
+        /// <summary>
+        /// Corroutine for opening the Inventory
+        /// </summary>
+        /// <returns></returns>
+        IEnumerator OpenCraftingScreen()
+        {
+            // Set isFinishedAnimating
+            isFinishedAnimating = false;
+
+            // Fade
+            content.FadeIn(animationTime, this, false);
+
+            // Wait til anim is finished
+            float _time = animationTime;
+            while (_time > 0)
+            {
+                _time -= Time.deltaTime;
+                yield return null;
+            }
+
+            // SetInventoriesActive
+            //SetInventoriesActive(true);
+
+            // Set isFinishedAnimating
+            isFinishedAnimating = true;
+        }
+
+        /// <summary>
+        /// Corroutine for closing the Inventory
+        /// </summary>
+        /// <returns></returns>
+        IEnumerator CloseCraftingScreen()
+        {
+            // Set isFinishedAnimating
+            isFinishedAnimating = false;
+
+            // SetInventoriesActive
+            //SetInventoriesActive(false);
+
+            // Fade
+            content.FadeOut(animationTime, this, false);
+
+            // Wait til anim is finished
+            float _time = animationTime;
+            while (_time > 0)
+            {
+                _time -= Time.deltaTime;
+                yield return null;
+            }
+
+            // Set isFinishedAnimating
+            isFinishedAnimating = true;
+        }
 
         #endregion
     }

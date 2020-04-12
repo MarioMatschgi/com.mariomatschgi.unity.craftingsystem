@@ -82,11 +82,11 @@ namespace MM.Systems.CraftingSystem
 
         void OnButtonPressed()
         {
-            Debug.Log("BTN Pressed: " + ((MonoBehaviour)craftingScreen.interactor).gameObject.name);
+            Debug.Log("BTN Pressed: " + ((MonoBehaviour)craftingScreen.craftor).gameObject.name);
 
-            ItemData[][] _remainingItems = CraftingSystem.TryCrafting(recipe, craftingScreen.interactor.inventoryUi.mainInventory.items);
+            ItemData[][] _remainingItems = CraftingSystem.TryCrafting(recipe, craftingScreen.craftor.inventoryUi.mainInventory.items);
             if (_remainingItems != null)
-                craftingScreen.interactor.inventoryUi.mainInventory.UpdateSlots(_remainingItems);
+                craftingScreen.craftor.inventoryUi.mainInventory.UpdateSlots(_remainingItems);
         }
 
         void Update()
