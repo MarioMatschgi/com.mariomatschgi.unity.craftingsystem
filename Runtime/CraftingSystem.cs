@@ -148,53 +148,84 @@ namespace MM.Systems.CraftingSystem
                 return null;
 
             // Set outItems (Add recipe output elements)
-            int _total = 0;
-            List<ItemData> _outItemsModified = new List<ItemData>(_craftingRecipe.outElements);   // Successfully found items get set to null, else amount decreases
-            for (int i = 0; i < _outItems.Length; i++)
+            // Try to stack
+            List<ItemData> _outItemsModified = new List<ItemData>();   // Successfully found items get set to null, else amount decreases
+            for (int i = 0; i < _craftingRecipe.outElements.Count; i++)
+                _outItemsModified.Add(new ItemData(_craftingRecipe.outElements[i].itemPreset, _craftingRecipe.outElements[i].itemAmount));
+
+            for (int _total = 0; _total < _craftingRecipe.outElements.Count; _total++)
             {
-                if (_outItems[i] == null)
-                    _outItems[i] = new ItemData[_inItems[i].Length];
-
-                for (int j = 0; j < _outItems[i].Length; j++)
+                for (int i = 0; i < _outItems.Length; i++)
                 {
-                    // If data is empty put item there
-                    if (_outItems[i][j] == null || _outItems[i][j].itemAmount <= 0 || _outItems[i][j].itemPreset == null)
-                    {
-                        _outItems[i][j] = _outItemsModified[_total];
+                    if (_outItems[i] == null)
+                        _outItems[i] = new ItemData[_inItems[i].Length];
 
-                        _total++;
-
-                        if (_total >= _craftingRecipe.outElements.Count)
-                            goto End2;
-                    }
-                    // Else check if outItem equals modified
-                    else if (_outItems[i][j].itemPreset.Equals(_outItemsModified[_total].itemPreset))
+                    for (int j = 0; j < _outItems[i].Length; j++)
                     {
-                        // Try to stack
-                        int _restAmt = _outItems[i][j].itemPreset.stackSize - _outItems[i][j].itemAmount; // How many items are able to stack ontop
-                        // If restAmt is less than stacksize, else skip since itemData is full
-                        if (_restAmt > 0)
+                        if (_outItems[i][j] == null || _outItems[i][j].itemPreset == null || _outItemsModified[_total] == null)
+                            continue;
+
+                        // Else check if outItem equals modified
+                        if (_outItems[i][j].itemPreset.Equals(_outItemsModified[_total].itemPreset))
                         {
-                            // If restAmt is smaller than crafting recipe's amount, set amount to stacksize, decrease crafting recipe's amount, so the rest rest gets added to new slot
-                            if (_restAmt < _outItemsModified[_total].itemAmount)
+                            // Try to stack
+                            int _restAmt = _outItems[i][j].itemPreset.stackSize - _outItems[i][j].itemAmount; // How many items are able to stack ontop
+                            // If restAmt is less than stacksize, else skip since itemData is full
+                            if (_restAmt > 0)
                             {
-                                _outItems[i][j].itemAmount = _outItems[i][j].itemPreset.stackSize;
-                                _outItemsModified[_total].itemAmount -= _restAmt;
-                            }
-                            // Else restAmt is larger, so add the full out amount and increase total
-                            else
-                            {
-                                _outItems[i][j].itemAmount += _outItemsModified[_total].itemAmount;
+                                // If restAmt is smaller than crafting recipe's amount, set amount to stacksize, decrease crafting recipe's amount, so the rest rest gets added to new slot
+                                if (_restAmt <= _outItemsModified[_total].itemAmount)
+                                {
+                                    _outItems[i][j].itemAmount = _outItems[i][j].itemPreset.stackSize;
+                                    _outItemsModified[_total].itemAmount -= _restAmt;
 
-                                _total++;
+                                    if (_outItemsModified[_total].itemAmount <= 0)
+                                        _outItemsModified[_total] = null;
+                                }
+                                // Else restAmt is larger, so add the full out amount and increase total
+                                else
+                                {
+                                    _outItems[i][j].itemAmount += _outItemsModified[_total].itemAmount;
+                                    _outItemsModified[_total] = null;
+
+                                    _total++;
+                                }
                             }
                         }
+                        if (_total >= _craftingRecipe.outElements.Count)
+                            goto End1;
                     }
-                    if (_total >= _craftingRecipe.outElements.Count)
-                        goto End2;
                 }
+            End1:
+                continue;
             }
-        End2:
+
+            // Try to add the items, that were not able to stack
+            _outItemsModified.RemoveMissingElements();
+            // List<ItemData> _outItemsModified = new List<ItemData>(_craftingRecipe.outElements);   // Successfully found items get set to null, else amount decreases
+            for (int _total = 0; _total < _craftingRecipe.outElements.Count; _total++)
+            {
+                for (int i = 0; i < _outItems.Length; i++)
+                {
+                    if (_outItems[i] == null)
+                        _outItems[i] = new ItemData[_inItems[i].Length];
+
+                    for (int j = 0; j < _outItems[i].Length; j++)
+                    {
+                        // If data is empty put item there
+                        if (_outItems[i][j] == null || _outItems[i][j].itemAmount <= 0 || _outItems[i][j].itemPreset == null)
+                        {
+                            _outItems[i][j] = _outItemsModified[_total];
+
+                            _total++;
+                        }
+                        if (_total >= _outItemsModified.Count)
+                            goto End2;
+                    }
+                }
+            End2:
+                continue;
+            }
 
             // Return result
             return _outItems;
