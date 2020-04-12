@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1912210279}
   - component: {fileID: 1912210280}
   m_Layer: 5
-  m_Name: Images
+  m_Name: ItemDisplayParent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -71,7 +71,7 @@ MonoBehaviour:
   colums: 2
   fitType: 0
   space: {x: 0, y: 0}
-  cellSize: {x: 65, y: 65}
+  cellSize: {x: -10, y: -10}
   fitX: 1
   fitY: 1
   padding:
@@ -93,7 +93,7 @@ GameObject:
   - component: {fileID: 3232842379922556240}
   - component: {fileID: 2160310899163193391}
   m_Layer: 5
-  m_Name: CraftingCell
+  m_Name: CraftingCellUi
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -140,9 +140,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   recipe: {fileID: 0}
+  craftingScreen: {fileID: 0}
   imageTextCellPrefab: {fileID: 1074013355783347015, guid: e1f70c25cc41b493c8b4eeef2f9b2c66,
     type: 3}
-  imageParent: {fileID: 1912210278}
+  itemDisplayParent: {fileID: 1912210278}
   button: {fileID: 2160310899163193391}
 --- !u!114 &3232842379922556240
 MonoBehaviour:
@@ -225,7 +226,7 @@ PrefabInstance:
     - target: {fileID: 1074013355783347015, guid: e1f70c25cc41b493c8b4eeef2f9b2c66,
         type: 3}
       propertyPath: m_Name
-      value: Image (1)
+      value: ItemDisplay (1)
       objectReference: {fileID: 0}
     - target: {fileID: 1074013355783347016, guid: e1f70c25cc41b493c8b4eeef2f9b2c66,
         type: 3}
@@ -370,7 +371,7 @@ PrefabInstance:
     - target: {fileID: 1074013355783347015, guid: e1f70c25cc41b493c8b4eeef2f9b2c66,
         type: 3}
       propertyPath: m_Name
-      value: Image (3)
+      value: ItemDisplay (3)
       objectReference: {fileID: 0}
     - target: {fileID: 1074013355783347016, guid: e1f70c25cc41b493c8b4eeef2f9b2c66,
         type: 3}
@@ -495,7 +496,7 @@ PrefabInstance:
     - target: {fileID: 1074013355783347015, guid: e1f70c25cc41b493c8b4eeef2f9b2c66,
         type: 3}
       propertyPath: m_Name
-      value: Image (2)
+      value: ItemDisplay (2)
       objectReference: {fileID: 0}
     - target: {fileID: 1074013355783347016, guid: e1f70c25cc41b493c8b4eeef2f9b2c66,
         type: 3}
@@ -640,7 +641,7 @@ PrefabInstance:
     - target: {fileID: 1074013355783347015, guid: e1f70c25cc41b493c8b4eeef2f9b2c66,
         type: 3}
       propertyPath: m_Name
-      value: Image (4)
+      value: ItemDisplay (4)
       objectReference: {fileID: 0}
     - target: {fileID: 1074013355783347016, guid: e1f70c25cc41b493c8b4eeef2f9b2c66,
         type: 3}

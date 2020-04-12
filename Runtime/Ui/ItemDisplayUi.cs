@@ -34,6 +34,30 @@ namespace MM.Systems.CraftingSystem
          * 
          */
 
+#if UNITY_EDITOR
+        [UnityEditor.MenuItem("GameObject/MM CraftingSystem/ItemDisplay Ui", false, 10)]
+        public static void OnCreate()
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            
+            CraftingCellUi[] _cells = (CraftingCellUi[])FindObjectsOfTypeAll(typeof(CraftingCellUi));
+            CraftingCellUi _cell = _cells.Length > 0 ? _cells[0] : null;
+            if (_cell == null || _cell.gameObject == null || _cell.gameObject.scene.name == null || _cell.gameObject.scene.name.Equals(string.Empty))
+            {
+                CraftingCellUi.OnCreate();
+
+                _cell = (CraftingCellUi)FindObjectsOfTypeAll(typeof(CraftingCellUi))[0];
+            }
+
+            // Create ItemDisplayUi
+            GameObject _itemDisplayObj = (GameObject)Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath("Packages/com.mariomatschgi.unity.craftingsystem/Prefabs/ItemDisplayUi.prefab",
+                typeof(GameObject)), _cell.transform);
+            _itemDisplayObj.transform.name = "ItemDisplayUi";
+
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+#endif
+
         void Start()
         {
             UpdateItemDisplay(item);

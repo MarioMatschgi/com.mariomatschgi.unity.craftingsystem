@@ -15,7 +15,7 @@ namespace MM.Systems.CraftingSystem
 
         [Header("Outlets")]
         public GameObject imageTextCellPrefab;
-        public RectTransform imageParent;
+        public RectTransform itemDisplayParent;
         public Button button;
 
 
@@ -26,6 +26,30 @@ namespace MM.Systems.CraftingSystem
          * 
          */
 
+#if UNITY_EDITOR
+        [UnityEditor.MenuItem("GameObject/MM CraftingSystem/CraftingCell Ui", false, 10)]
+        public static void OnCreate()
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+
+            CraftingScreenUi[] _screens = (CraftingScreenUi[])FindObjectsOfTypeAll(typeof(CraftingScreenUi));
+            CraftingScreenUi _craftingScreen = _screens.Length > 0 ? _screens[0] : null;
+            if (_craftingScreen == null || _craftingScreen.gameObject == null || _craftingScreen.gameObject.scene.name == null || _craftingScreen.gameObject.scene.name.Equals(string.Empty))
+            {
+                CraftingScreenUi.OnCreate();
+
+                _craftingScreen = (CraftingScreenUi)FindObjectsOfTypeAll(typeof(CraftingScreenUi))[0];
+            }
+
+            // Create ItemDisplayUi
+            GameObject _craftingScreenObj = (GameObject)Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath("Packages/com.mariomatschgi.unity.craftingsystem/Prefabs/CraftingCellUi.prefab",
+                typeof(GameObject)), _craftingScreen.craftingCellPanel);
+            _craftingScreenObj.transform.name = "CraftingCell";
+
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+#endif
+
         public void Setup(CraftingRecipe _recipe, CraftingScreenUi _craftingScreen)
         {
             // Setup variables
@@ -33,19 +57,19 @@ namespace MM.Systems.CraftingSystem
             craftingScreen = _craftingScreen;
 
             // Setup content
-            Image[] _images = imageParent.GetComponentsInChildren<Image>();
+            Image[] _images = itemDisplayParent.GetComponentsInChildren<Image>();
             int i;
             for (i = 0; i < recipe.outElements.Count; i++)
             {
                 // If less children than current recipe create new cell, else set the recipe
                 if (_images.Length < i + 1)
-                    Instantiate(imageTextCellPrefab, imageParent).GetComponent<ItemDisplayUi>().item = recipe.outElements[i];
+                    Instantiate(imageTextCellPrefab, itemDisplayParent).GetComponent<ItemDisplayUi>().item = recipe.outElements[i];
                 else
-                    imageParent.GetChild(i).GetComponent<ItemDisplayUi>().item = recipe.outElements[i];
+                    itemDisplayParent.GetChild(i).GetComponent<ItemDisplayUi>().item = recipe.outElements[i];
             }
             // Destroy remaining cells
-            for (int j = i; j < imageParent.childCount; j++)
-                Destroy(imageParent.GetChild(j).gameObject);
+            for (int j = i; j < itemDisplayParent.childCount; j++)
+                Destroy(itemDisplayParent.GetChild(j).gameObject);
 
             // Setup button callback
             button.onClick.AddListener(delegate { OnButtonPressed(); });

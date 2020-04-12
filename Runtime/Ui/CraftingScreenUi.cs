@@ -28,6 +28,30 @@ namespace MM.Systems.CraftingSystem
          * 
          */
 
+#if UNITY_EDITOR
+        [UnityEditor.MenuItem("GameObject/MM CraftingSystem/CraftingScreen Ui", false, 10)]
+        public static void OnCreate()
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+
+            CraftingCanvas[] _canvases = (CraftingCanvas[])FindObjectsOfTypeAll(typeof(CraftingCanvas));
+            CraftingCanvas _craftingCanvas = _canvases.Length > 0 ? _canvases[0] : null;
+            if (_craftingCanvas == null || _craftingCanvas.gameObject == null || _craftingCanvas.gameObject.scene.name == null || _craftingCanvas.gameObject.scene.name.Equals(string.Empty))
+            {
+                CraftingCanvas.OnCreate();
+
+                _craftingCanvas = (CraftingCanvas)FindObjectsOfTypeAll(typeof(CraftingCanvas))[0];
+            }
+
+            // Create ItemDisplayUi
+            GameObject _craftingScreenObj = (GameObject)Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath("Packages/com.mariomatschgi.unity.craftingsystem/Prefabs/CraftingScreenUi.prefab",
+                typeof(GameObject)), _craftingCanvas.transform);
+            _craftingScreenObj.transform.name = "CraftingScreen";
+
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+#endif
+
         void Awake()
         {
             CraftingCellUi[] _craftingCells = craftingCellPanel.GetComponentsInChildren<CraftingCellUi>();
