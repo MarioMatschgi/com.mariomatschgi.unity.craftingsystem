@@ -60,26 +60,9 @@ namespace MM.Systems.CraftingSystem
         {
             Debug.Log("BTN Pressed: " + ((MonoBehaviour)craftingScreen.interactor).gameObject.name);
 
-            //List<ItemData> _remainingItems = CraftingSystem.TryCrafting(recipe, craftingScreen.interactor.inventoryUi.mainInventory.items.Single());
-            //craftingScreen.interactor.inventoryUi.mainInventory.UpdateSlots(_remainingItems);
-
-
             ItemData[][] _remainingItems = CraftingSystem.TryCrafting(recipe, craftingScreen.interactor.inventoryUi.mainInventory.items);
-            if (_remainingItems == null)
-                Debug.Log("NULL");
-            else
-            {
-                foreach (ItemData[] _datas in _remainingItems)
-                {
-                    foreach (ItemData _data in _datas)
-                    {
-                        if (_data != null && _data.itemPreset != null)
-                            Debug.Log("N: " + _data.itemPreset.name + " A: " + _data.itemAmount);
-                    }
-                }
-
+            if (_remainingItems != null)
                 craftingScreen.interactor.inventoryUi.mainInventory.UpdateSlots(_remainingItems);
-            }
         }
 
         void Update()
