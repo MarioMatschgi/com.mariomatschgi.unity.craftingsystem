@@ -13,6 +13,9 @@ namespace MM.Systems.CraftingSystem
         public CraftingRecipe recipe;
         public CraftingScreenUi craftingScreen;
 
+        [Header("Colors")]
+        public Color notCraftableColor;
+
         [Header("Outlets")]
         public GameObject imageTextCellPrefab;
         public RectTransform itemDisplayParent;
@@ -73,6 +76,9 @@ namespace MM.Systems.CraftingSystem
 
             // Setup button callback
             button.onClick.AddListener(delegate { OnButtonPressed(); });
+
+            // Setup craftableCallback
+            craftingScreen.craftor.inventoryUi.inventoryChangedCallback += OnInventoryChanged;
         }
 
         void Start()
@@ -80,11 +86,26 @@ namespace MM.Systems.CraftingSystem
 
         }
 
+        void OnInventoryChanged()
+        {
+            if (CraftingSystem.CanCraft(recipe, craftingScreen.craftor.inventoryUi.mainInventory.items))
+            {
+                Debug.Log("N");
+                button.image.color = button.colors.normalColor;
+            }
+            else
+            {
+                Debug.Log("C");
+                button.image.color = notCraftableColor;
+            }
+        }
+
         void OnButtonPressed()
         {
             Debug.Log("BTN Pressed: " + ((MonoBehaviour)craftingScreen.craftor).gameObject.name);
 
-            ItemData[][] _remainingItems = CraftingSystem.TryCrafting(recipe, craftingScreen.craftor.inventoryUi.mainInventory.items);
+            List<ItemData> _notFit = new List<ItemData>();  // ToDo: Manage notFit items, eg drop them
+            ItemData[][] _remainingItems = CraftingSystem.TryCrafting(recipe, out _notFit, craftingScreen.craftor.inventoryUi.mainInventory.items);
             if (_remainingItems != null)
                 craftingScreen.craftor.inventoryUi.mainInventory.UpdateSlots(_remainingItems);
         }
