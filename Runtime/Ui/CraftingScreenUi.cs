@@ -87,7 +87,6 @@ namespace MM.Systems.CraftingSystem
                 }
             isFinishedAnimating = true;
             content.alpha = 0;
-            content.blocksRaycasts = false;
 
             // Setup CraftingCells
             CraftingCellUi[] _craftingCells = craftingCellPanel.GetComponentsInChildren<CraftingCellUi>();
@@ -156,7 +155,6 @@ namespace MM.Systems.CraftingSystem
 
             // Fade
             content.FadeIn(animationTime, this, false);
-            content.blocksRaycasts = true;
 
             // Wait til anim is finished
             float _time = animationTime;
@@ -187,7 +185,6 @@ namespace MM.Systems.CraftingSystem
 
             // Fade
             content.FadeOut(animationTime, this, false);
-            content.blocksRaycasts = false;
 
             // Wait til anim is finished
             float _time = animationTime;
