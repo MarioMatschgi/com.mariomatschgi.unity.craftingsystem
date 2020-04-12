@@ -89,15 +89,9 @@ namespace MM.Systems.CraftingSystem
         void OnInventoryChanged()
         {
             if (CraftingSystem.CanCraft(recipe, craftingScreen.craftor.inventoryUi.mainInventory.items))
-            {
-                Debug.Log("N");
                 button.image.color = button.colors.normalColor;
-            }
             else
-            {
-                Debug.Log("C");
                 button.image.color = notCraftableColor;
-            }
         }
 
         void OnButtonPressed()
@@ -108,6 +102,10 @@ namespace MM.Systems.CraftingSystem
             ItemData[][] _remainingItems = CraftingSystem.TryCrafting(recipe, out _notFit, craftingScreen.craftor.inventoryUi.mainInventory.items);
             if (_remainingItems != null)
                 craftingScreen.craftor.inventoryUi.mainInventory.UpdateSlots(_remainingItems);
+
+            // Invoke Event
+            if (craftingScreen.craftor.inventoryUi.inventoryChangedCallback != null)
+                craftingScreen.craftor.inventoryUi.inventoryChangedCallback.Invoke();
         }
 
         void Update()

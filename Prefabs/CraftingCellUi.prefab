@@ -141,6 +141,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   recipe: {fileID: 0}
   craftingScreen: {fileID: 0}
+  notCraftableColor: {r: 0.69803923, g: 0.69803923, b: 0.69803923, a: 1}
   imageTextCellPrefab: {fileID: 1074013355783347015, guid: e1f70c25cc41b493c8b4eeef2f9b2c66,
     type: 3}
   itemDisplayParent: {fileID: 1912210278}
