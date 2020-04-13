@@ -79,6 +79,7 @@ namespace MM.Systems.CraftingSystem
 
             // Setup craftableCallback
             craftingScreen.craftor.inventoryUi.inventoryChangedCallback += OnInventoryChanged;
+            OnInventoryChanged();
         }
 
         void Start()
