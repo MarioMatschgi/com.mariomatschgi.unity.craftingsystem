@@ -5,11 +5,12 @@ using UnityEngine.UI;
 
 namespace MM.Systems.CraftingSystem
 {
+    [AddComponentMenu("MM CraftingSystem/CraftingCell Ui")]
     public class CraftingCellUi : MonoBehaviour
     {
         [Header("General")]
         public CraftingRecipe recipe;
-        public CraftingScreenUi craftingScreen;
+        public CraftingPanelUi craftingScreen;
 
         [Header("Colors")]
         public Color notCraftableColor;
@@ -33,13 +34,13 @@ namespace MM.Systems.CraftingSystem
         {
 #pragma warning disable CS0618 // Type or member is obsolete
 
-            CraftingScreenUi[] _screens = (CraftingScreenUi[])FindObjectsOfTypeAll(typeof(CraftingScreenUi));
-            CraftingScreenUi _craftingScreen = _screens.Length > 0 ? _screens[0] : null;
+            CraftingPanelUi[] _screens = (CraftingPanelUi[])FindObjectsOfTypeAll(typeof(CraftingPanelUi));
+            CraftingPanelUi _craftingScreen = _screens.Length > 0 ? _screens[0] : null;
             if (_craftingScreen == null || _craftingScreen.gameObject == null || _craftingScreen.gameObject.scene.name == null || _craftingScreen.gameObject.scene.name.Equals(string.Empty))
             {
-                CraftingScreenUi.OnCreate();
+                CraftingPanelUi.OnCreate();
 
-                _craftingScreen = (CraftingScreenUi)FindObjectsOfTypeAll(typeof(CraftingScreenUi))[0];
+                _craftingScreen = (CraftingPanelUi)FindObjectsOfTypeAll(typeof(CraftingPanelUi))[0];
             }
 
             // Create ItemDisplayUi
@@ -51,7 +52,7 @@ namespace MM.Systems.CraftingSystem
         }
 #endif
 
-        public void Setup(CraftingRecipe _recipe, CraftingScreenUi _craftingScreen)
+        public void Setup(CraftingRecipe _recipe, CraftingPanelUi _craftingScreen)
         {
             // Setup variables
             recipe = _recipe;
@@ -82,6 +83,12 @@ namespace MM.Systems.CraftingSystem
         void Start()
         {
 
+        }
+
+        void OnDestroy()
+        {
+            // Remove craftableCallback
+            craftingScreen.craftor.inventoryUi.inventoryChangedCallback -= OnInventoryChanged;
         }
 
         void OnInventoryChanged()

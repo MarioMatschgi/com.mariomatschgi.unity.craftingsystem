@@ -1,14 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using MM.Systems.InventorySystem;
 using System.Linq;
 using MM.Libraries.UI;
 
 namespace MM.Systems.CraftingSystem
 {
-    public class CraftingScreenUi : MonoBehaviour
+    [AddComponentMenu("MM CraftingSystem/CraftingPanel Ui")]
+    public class CraftingPanelUi : MonoBehaviour
     {
         [Header("General")]
         public Transform craftingCellPanel;
@@ -50,7 +49,7 @@ namespace MM.Systems.CraftingSystem
          */
 
 #if UNITY_EDITOR
-        [UnityEditor.MenuItem("GameObject/MM CraftingSystem/CraftingScreen Ui", false, 10)]
+        [UnityEditor.MenuItem("GameObject/MM CraftingSystem/CraftingPanel Ui", false, 10)]
         public static void OnCreate()
         {
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -65,9 +64,9 @@ namespace MM.Systems.CraftingSystem
             }
 
             // Create ItemDisplayUi
-            GameObject _craftingScreenObj = (GameObject)Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath("Packages/com.mariomatschgi.unity.craftingsystem/Prefabs/CraftingScreenUi.prefab",
+            GameObject _craftingScreenObj = (GameObject)Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath("Packages/com.mariomatschgi.unity.craftingsystem/Prefabs/CraftingPanelUi.prefab",
                 typeof(GameObject)), _craftingCanvas.transform);
-            _craftingScreenObj.transform.name = "CraftingScreen";
+            _craftingScreenObj.transform.name = "CraftingPanel";
 
 #pragma warning restore CS0618 // Type or member is obsolete
         }

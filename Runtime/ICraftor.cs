@@ -4,6 +4,6 @@ namespace MM.Systems.CraftingSystem
 {
 	public interface ICraftor : IInteractor
 	{
-		CraftingScreenUi craftingScreen { get; set; }
+		CraftingPanelUi craftingScreen { get; set; }
 	}
 }

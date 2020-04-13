@@ -1,12 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using MM.Systems.InventorySystem;
 
 namespace MM.Systems.CraftingSystem
 {
+    [AddComponentMenu("MM CraftingSystem/ItemDisplay Ui")]
     public class ItemDisplayUi : MonoBehaviour
     {
         [Header("General")]

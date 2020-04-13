@@ -1,11 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using MM.Systems.InventorySystem;
-using MM.Systems.CraftingSystem;
 
 namespace MM.Systems.CraftingSystem
 {
+    [AddComponentMenu("MM CraftingSystem/ExampleCraftingManager")]
     public class ExampleCraftingManager : MonoBehaviour
     {
         public CraftingRecipe recipe;

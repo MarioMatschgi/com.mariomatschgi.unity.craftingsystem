@@ -2,6 +2,7 @@
 
 namespace MM.Systems.CraftingSystem
 {
+    [AddComponentMenu("MM CraftingSystem/CraftingCanvas Ui")]
     public class CraftingCanvas : MonoBehaviour
     {
 

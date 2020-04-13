@@ -11,7 +11,7 @@ namespace MM.Systems.CraftingSystem
 		public int interactorId { get { return playerId; } set { playerId = value; } }
 		public InteractorInventoryUi inventoryUi { get; set; }
 
-        public CraftingScreenUi craftingScreen { get; set; }
+        public CraftingPanelUi craftingScreen { get; set; }
 
 
         #region Callback Methodes
