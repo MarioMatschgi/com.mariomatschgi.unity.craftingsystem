@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using MM.Systems.InventorySystem;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Linq;
 
 namespace MM.Systems.CraftingSystem
 {
@@ -96,8 +94,6 @@ namespace MM.Systems.CraftingSystem
 
         void OnButtonPressed()
         {
-            Debug.Log("BTN Pressed: " + ((MonoBehaviour)craftingScreen.craftor).gameObject.name);
-
             List<ItemData> _notFit = new List<ItemData>();  // ToDo: Manage notFit items, eg drop them
             ItemData[][] _remainingItems = CraftingSystem.TryCrafting(recipe, out _notFit, craftingScreen.craftor.inventoryUi.mainInventory.items);
             if (_remainingItems != null)
