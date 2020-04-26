@@ -61,16 +61,28 @@ namespace MM.Systems.CraftingSystem
 
         void Start()
         {
+            // Subscribe to event
+            CraftingSystem.craftingCallback += OnCraft;
+        }
 
+        void OnCraft(CraftingRecipe _recipe)
+        {
+            // Update Panels
+            StartCoroutine(_Corr());
+
+            IEnumerator _Corr()
+            {
+                yield return null;
+
+                UpdatePanels();
+            }
         }
 
         void Update()
         {
             // Move to mouse
             if (isOpen)
-            {
                 transform.position = Input.mousePosition + new Vector3(mouseOffset.x, mouseOffset.y, transform.position.z);
-            }
         }
 
         #endregion

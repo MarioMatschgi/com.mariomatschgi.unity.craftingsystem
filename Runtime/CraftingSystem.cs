@@ -6,6 +6,8 @@ namespace MM.Systems.CraftingSystem
 {
     public class CraftingSystem
     {
+        public delegate void OnCraftEvent(CraftingRecipe _recipe);
+        public static OnCraftEvent craftingCallback;
 
 
         #region Callback Methodes
@@ -146,6 +148,10 @@ namespace MM.Systems.CraftingSystem
             // Combine leftItems and outItems
             _outItems.AddRange(_leftItems);
 
+            // Invoke Event
+            if (craftingCallback != null)
+                craftingCallback.Invoke(_craftingRecipe);
+
             // Return result
             return _outItems;
         }
@@ -158,32 +164,31 @@ namespace MM.Systems.CraftingSystem
         public static ItemData[][] TryCrafting(CraftingRecipe _craftingRecipe, out List<ItemData> _notFit, params ItemData[][] _inItems)
         {
             // Get recipe values
-            ItemData[][] _outItems = new ItemData[_inItems.Length][];
+            ItemData[][] _newInItems = new ItemData[_inItems.Length][];
             for (int i = 0; i < _inItems.Length; i++)
                 for (int j = 0; j < _inItems[i].Length; j++)
                 {
-                    if (_outItems[i] == null)
-                        _outItems[i] = new ItemData[_inItems[i].Length];
+                    if (_newInItems[i] == null)
+                        _newInItems[i] = new ItemData[_inItems[i].Length];
 
                     if (_inItems[i][j] == null)
-                        _outItems[i][j] = null;
+                        _newInItems[i][j] = null;
                     else if (_inItems[i][j].itemPreset == null)
-                        _outItems[i][j] = null;
+                        _newInItems[i][j] = null;
                     else
-                        _outItems[i][j] = new ItemData(_inItems[i][j].itemPreset, _inItems[i][j].itemAmount);
+                        _newInItems[i][j] = new ItemData(_inItems[i][j].itemPreset, _inItems[i][j].itemAmount);
                 }
 
             // Set outItems (remove recipe input elements)
             // Iterate through all input items
-            int _amt = 0;
-            int _currIdx = 0;
             List<ItemData> _inItemsModified = new List<ItemData>();   // Successfully found items get set to null, else amount decreases
             foreach (ItemData _data in _craftingRecipe.inElements)
                 _inItemsModified.Add(new ItemData(_data.itemPreset, _data.itemAmount));
 
+            int _currIdx = 0;
             foreach (ItemData _inputData in _craftingRecipe.inElements)
             {
-                foreach (ItemData[] _outDatas in _outItems)
+                foreach (ItemData[] _outDatas in _newInItems)
                     foreach (ItemData _outData in _outDatas)
                     {
                         // If outData is emtpy, continue
@@ -204,24 +209,6 @@ namespace MM.Systems.CraftingSystem
 
                                 goto End0;
                             }
-                            /*
-                            // Calculate amount
-                            _amt = _outData.itemAmount - _inputData.itemAmount;
-
-                            // Set outData amount
-                            _outData.itemAmount = Mathf.Clamp(_amt, 0, _outData.itemAmount);
-
-                            // If amount less 0, the remaining should be set to modified's data
-                            if (_amt < 0)
-                                _inItemsModified[_currIdx].itemAmount = Mathf.Abs(_amt);
-                            // Else set null
-                            else
-                            {
-                                _inItemsModified[_currIdx] = null;
-
-                                goto End0;
-                            }
-                            */
                         }
                     }
                 End0:
@@ -237,35 +224,35 @@ namespace MM.Systems.CraftingSystem
             }
 
             // Set outItems (Add recipe output elements)
-            // Try to stack
             List<ItemData> _outItemsModified = new List<ItemData>();   // Successfully found items get set to null, else amount decreases
             for (int i = 0; i < _craftingRecipe.outElements.Count; i++)
                 _outItemsModified.Add(new ItemData(_craftingRecipe.outElements[i].itemPreset, _craftingRecipe.outElements[i].itemAmount));
 
+            // Try to stack
             for (int _total = 0; _total < _craftingRecipe.outElements.Count; _total++)
             {
-                for (int i = 0; i < _outItems.Length; i++)
+                for (int i = 0; i < _newInItems.Length; i++)
                 {
-                    if (_outItems[i] == null)
-                        _outItems[i] = new ItemData[_inItems[i].Length];
+                    if (_newInItems[i] == null)
+                        _newInItems[i] = new ItemData[_inItems[i].Length];
 
-                    for (int j = 0; j < _outItems[i].Length; j++)
+                    for (int j = 0; j < _newInItems[i].Length; j++)
                     {
-                        if (_outItems[i][j] == null || _outItems[i][j].itemPreset == null || _outItemsModified[_total] == null)
+                        if (_newInItems[i][j] == null || _newInItems[i][j].itemPreset == null || _outItemsModified[_total] == null)
                             continue;
 
                         // Else check if outItem equals modified
-                        if (_outItems[i][j].itemPreset.Equals(_outItemsModified[_total].itemPreset))
+                        if (_newInItems[i][j].itemPreset.Equals(_outItemsModified[_total].itemPreset))
                         {
                             // Try to stack
-                            int _restAmt = _outItems[i][j].itemPreset.stackSize - _outItems[i][j].itemAmount; // How many items are able to stack ontop
+                            int _restAmt = _newInItems[i][j].itemPreset.stackSize - _newInItems[i][j].itemAmount; // How many items are able to stack ontop
                             // If restAmt is less than stacksize, else skip since itemData is full
                             if (_restAmt > 0)
                             {
                                 // If restAmt is smaller than crafting recipe's amount, set amount to stacksize, decrease crafting recipe's amount, so the rest rest gets added to new slot
                                 if (_restAmt <= _outItemsModified[_total].itemAmount)
                                 {
-                                    _outItems[i][j].itemAmount = _outItems[i][j].itemPreset.stackSize;
+                                    _newInItems[i][j].itemAmount = _newInItems[i][j].itemPreset.stackSize;
                                     _outItemsModified[_total].itemAmount -= _restAmt;
 
                                     if (_outItemsModified[_total].itemAmount <= 0)
@@ -274,7 +261,7 @@ namespace MM.Systems.CraftingSystem
                                 // Else restAmt is larger, so add the full out amount and increase total
                                 else
                                 {
-                                    _outItems[i][j].itemAmount += _outItemsModified[_total].itemAmount;
+                                    _newInItems[i][j].itemAmount += _outItemsModified[_total].itemAmount;
                                     _outItemsModified[_total] = null;
 
                                     _total++;
@@ -291,20 +278,20 @@ namespace MM.Systems.CraftingSystem
 
             // Try to add the items, that were not able to stack
             _outItemsModified.RemoveMissingElements();
-            // List<ItemData> _outItemsModified = new List<ItemData>(_craftingRecipe.outElements);   // Successfully found items get set to null, else amount decreases
             for (int _total = 0; _total < _craftingRecipe.outElements.Count; _total++)
             {
-                for (int i = 0; i < _outItems.Length; i++)
+                for (int i = 0; i < _newInItems.Length; i++)
                 {
-                    if (_outItems[i] == null)
-                        _outItems[i] = new ItemData[_inItems[i].Length];
+                    if (_newInItems[i] == null)
+                        _newInItems[i] = new ItemData[_inItems[i].Length];
 
-                    for (int j = 0; j < _outItems[i].Length; j++)
+                    for (int j = 0; j < _newInItems[i].Length; j++)
                     {
                         // If data is empty put item there
-                        if (_outItems[i][j] == null || _outItems[i][j].itemAmount <= 0 || _outItems[i][j].itemPreset == null)
+                        if (_newInItems[i][j] == null || _newInItems[i][j].itemAmount <= 0 || _newInItems[i][j].itemPreset == null)
                         {
-                            _outItems[i][j] = _outItemsModified[_total];
+                            _newInItems[i][j] = _outItemsModified[_total];
+                            _outItemsModified[_total] = null;
 
                             _total++;
                         }
@@ -322,8 +309,12 @@ namespace MM.Systems.CraftingSystem
             foreach (ItemData _data in _outItemsModified)
                 _notFit.Add(new ItemData(_data.itemPreset, _data.itemAmount));
 
+            // Invoke Event
+            if (craftingCallback != null)
+                craftingCallback.Invoke(_craftingRecipe);
+
             // Return result
-            return _outItems;
+            return _newInItems;
         }
 
         #endregion
