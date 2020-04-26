@@ -1,12 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MM.Systems.InventorySystem;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace MM.Systems.CraftingSystem
 {
     [AddComponentMenu("MM CraftingSystem/CraftingCell Ui")]
-    public class CraftingCellUi : MonoBehaviour
+    public class CraftingCellUi : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         [Header("General")]
         public CraftingRecipe recipe;
@@ -65,9 +67,9 @@ namespace MM.Systems.CraftingSystem
             {
                 // If less children than current recipe create new cell, else set the recipe
                 if (_images.Length < i + 1)
-                    Instantiate(imageTextCellPrefab, itemDisplayParent).GetComponent<ItemDisplayUi>().item = recipe.outElements[i];
+                    Instantiate(imageTextCellPrefab, itemDisplayParent).GetComponent<ItemDisplayUi>().itemData = recipe.outElements[i];
                 else
-                    itemDisplayParent.GetChild(i).GetComponent<ItemDisplayUi>().item = recipe.outElements[i];
+                    itemDisplayParent.GetChild(i).GetComponent<ItemDisplayUi>().itemData = recipe.outElements[i];
             }
             // Destroy remaining cells
             for (int j = i; j < itemDisplayParent.childCount; j++)
@@ -88,12 +90,14 @@ namespace MM.Systems.CraftingSystem
         void OnDestroy()
         {
             // Remove craftableCallback
-            craftingScreen.craftor.inventoryUi.inventoryChangedCallback -= OnInventoryChanged;
+            if (craftingScreen != null && craftingScreen.craftor != null && craftingScreen.craftor.inventoryUi != null)
+                if (craftingScreen.craftor.inventoryUi.inventoryChangedCallback != null)
+                    craftingScreen.craftor.inventoryUi.inventoryChangedCallback -= OnInventoryChanged;
         }
 
-        void OnInventoryChanged()
+        public void OnInventoryChanged()
         {
-            if (CraftingSystem.CanCraft(recipe, craftingScreen.craftor.inventoryUi.mainInventory.items))
+            if (CraftingSystem.CanCraft(recipe, craftingScreen.craftor.inventoryUi.mainInventory.items).Count <= 0)
                 button.image.color = button.colors.normalColor;
             else
                 button.image.color = notCraftableColor;
@@ -102,13 +106,30 @@ namespace MM.Systems.CraftingSystem
         void OnButtonPressed()
         {
             List<ItemData> _notFit = new List<ItemData>();  // ToDo: Manage notFit items, eg drop them
+
+            // Try crafting
             ItemData[][] _remainingItems = CraftingSystem.TryCrafting(recipe, out _notFit, craftingScreen.craftor.inventoryUi.mainInventory.items);
             if (_remainingItems != null)
                 craftingScreen.craftor.inventoryUi.mainInventory.UpdateSlots(_remainingItems);
 
+            // Drop not fit items
+            foreach (ItemData _data in _notFit)
+                InventoryUiManager.instance.DropItem(_data, craftingScreen.craftor);
+
             // Invoke Event
             if (craftingScreen.craftor.inventoryUi.inventoryChangedCallback != null)
                 craftingScreen.craftor.inventoryUi.inventoryChangedCallback.Invoke();
+        }
+
+        public void OnPointerEnter(PointerEventData _eventData)
+        {
+            craftingScreen.hoverPanel.recipe = recipe;
+            craftingScreen.hoverPanel.UpdateCraftingHoverPanelVisibility(true);
+        }
+
+        public void OnPointerExit(PointerEventData _eventData)
+        {
+            craftingScreen.hoverPanel.UpdateCraftingHoverPanelVisibility(false);
         }
 
         void Update()

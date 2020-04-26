@@ -11,6 +11,7 @@ namespace MM.Systems.CraftingSystem
     {
         [Header("General")]
         public Transform craftingCellPanel;
+        public CraftingCellUi[] craftingCells;
         [Space]
         public List<CraftingRecipe> craftingRecipes;
         [Space]
@@ -36,6 +37,7 @@ namespace MM.Systems.CraftingSystem
 
         [Header("Outlets")]
         public CanvasGroup content;
+        public CraftingHoverPanel hoverPanel;
 
         [Header("Prefabs")]
         public GameObject craftingCellPrefab;
@@ -84,17 +86,18 @@ namespace MM.Systems.CraftingSystem
 
                     break;
                 }
+            hoverPanel.craftingScreen = this;
             isFinishedAnimating = true;
             content.alpha = 0;
             content.blocksRaycasts = false;
 
             // Setup CraftingCells
-            CraftingCellUi[] _craftingCells = craftingCellPanel.GetComponentsInChildren<CraftingCellUi>();
+            craftingCells = craftingCellPanel.GetComponentsInChildren<CraftingCellUi>();
             int i;
             for (i = 0; i < craftingRecipes.Count; i++)
             {
                 // If less children than current recipe create new cell, else set the recipe
-                if (_craftingCells.Length < i + 1)
+                if (craftingCells.Length < i + 1)
                     Instantiate(craftingCellPrefab, craftingCellPanel).GetComponent<CraftingCellUi>().Setup(craftingRecipes[i], this);
                 else
                     craftingCellPanel.GetChild(i).GetComponent<CraftingCellUi>().Setup(craftingRecipes[i], this);
@@ -133,6 +136,10 @@ namespace MM.Systems.CraftingSystem
                 StartCoroutine(OpenCraftingScreen());
             else
                 StartCoroutine(CloseCraftingScreen());
+
+            // Update Crafting cells
+            for (int i = 0; i < craftingRecipes.Count; i++)
+                craftingCellPanel.GetChild(i).GetComponent<CraftingCellUi>().OnInventoryChanged();
         }
 
         #endregion

@@ -9,21 +9,40 @@ namespace MM.Systems.CraftingSystem
     public class ItemDisplayUi : MonoBehaviour
     {
         [Header("General")]
+        public Color notCraftableColor;
         [SerializeField]
-        ItemData m_item;
-        public ItemData item
+        ItemData m_itemData;
+        public ItemData itemData
         {
-            get { return m_item; }
+            get { return m_itemData; }
             set
             {
-                m_item = value;
-                UpdateItemDisplay(item);
+                m_itemData = value;
+                UpdateItemDisplay(itemData);
+            }
+        }
+        [Space]
+        [SerializeField]
+        bool m_isGrayedOut;
+        public bool isGrayedOut
+        {
+            get { return m_isGrayedOut; }
+            set
+            {
+                m_isGrayedOut = value;
+                UpdateIsGrayedOut();
             }
         }
 
         [Header("Outlets")]
         public Image image;
-        public TMP_Text text;
+        public TMP_Text nameText;
+        public TMP_Text amountText;
+
+
+        Color normalImageColor;
+        Color normalNameColor;
+        Color normalAmountColor;
 
 
         #region Callback Methodes
@@ -57,9 +76,24 @@ namespace MM.Systems.CraftingSystem
         }
 #endif
 
+        public void Setup(ItemData _itemData, bool _isGrayedOut)
+        {
+            itemData = _itemData;
+            isGrayedOut = _isGrayedOut;
+        }
+
+        void Awake()
+        {
+            // Setup variables
+            normalImageColor = image.color;
+            if (nameText != null)
+                normalNameColor = nameText.color;
+            normalAmountColor = amountText.color;
+        }
+
         void Start()
         {
-            UpdateItemDisplay(item);
+            UpdateItemDisplay(itemData);
         }
 
         void Update()
@@ -86,7 +120,33 @@ namespace MM.Systems.CraftingSystem
             image.sprite = _item.itemPreset.sprite;
 
             // Update text
-            text.text = _item.itemAmount.ToString();
+            if (nameText != null)
+                nameText.text = _item.itemPreset.name;
+            amountText.text = _item.itemAmount.ToString();
+        }
+
+        public void UpdateIsGrayedOut()
+        {
+            if (isGrayedOut)
+            {
+                // Update sprite
+                image.color = notCraftableColor;
+
+                // Update text
+                if (nameText != null)
+                    nameText.color = notCraftableColor;
+                amountText.color = notCraftableColor;
+            }
+            else
+            {
+                // Update sprite
+                image.color = normalImageColor;
+
+                // Update text
+                if (nameText != null)
+                    nameText.color = normalNameColor;
+                amountText.color = normalAmountColor;
+            }
         }
 
         #endregion

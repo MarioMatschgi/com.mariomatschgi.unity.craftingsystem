@@ -168,7 +168,7 @@ GameObject:
   - component: {fileID: 1074013355783347017}
   - component: {fileID: 355811664960512163}
   m_Layer: 5
-  m_Name: ItemDisplay
+  m_Name: ItemDisplayUi
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -242,8 +242,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a49d1c15c5494860bc95616627a73cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_item:
+  m_itemData:
     itemPreset: {fileID: 0}
     itemAmount: 0
   image: {fileID: 1074013355783347017}
-  text: {fileID: 1074013354146124509}
+  nameText: {fileID: 0}
+  amountText: {fileID: 1074013354146124509}

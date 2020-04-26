@@ -24,27 +24,32 @@ namespace MM.Systems.CraftingSystem
          *
          */
 
-        public static bool CanCraft(CraftingRecipe _craftingRecipe, params ItemData[][] _inItems)
+        /// <summary>
+        /// Checks if crafting is possible, if so it returns an empty List, else a list of the remaining ItemDatas
+        /// </summary>
+        /// <param name="_craftingRecipe"></param>
+        /// <param name="_inItems"></param>
+        /// <returns></returns>
+        public static List<ItemData> CanCraft(CraftingRecipe _craftingRecipe, params ItemData[][] _inItems)
         {
             // Get recipe values
-            ItemData[][] _outItems = new ItemData[_inItems.Length][];
+            ItemData[][] _newInItems = new ItemData[_inItems.Length][];
             for (int i = 0; i < _inItems.Length; i++)
                 for (int j = 0; j < _inItems[i].Length; j++)
                 {
-                    if (_outItems[i] == null)
-                        _outItems[i] = new ItemData[_inItems[i].Length];
+                    if (_newInItems[i] == null)
+                        _newInItems[i] = new ItemData[_inItems[i].Length];
 
                     if (_inItems[i][j] == null)
-                        _outItems[i][j] = null;
+                        _newInItems[i][j] = null;
                     else if (_inItems[i][j].itemPreset == null)
-                        _outItems[i][j] = null;
+                        _newInItems[i][j] = null;
                     else
-                        _outItems[i][j] = new ItemData(_inItems[i][j].itemPreset, _inItems[i][j].itemAmount);
+                        _newInItems[i][j] = new ItemData(_inItems[i][j].itemPreset, _inItems[i][j].itemAmount);
                 }
 
             // Set outItems (remove recipe input elements)
             // Iterate through all input items
-            int _amt = 0;
             int _currIdx = 0;
             List<ItemData> _inItemsModified = new List<ItemData>();   // Successfully found items get set to null, else amount decreases
             foreach (ItemData _data in _craftingRecipe.inElements)
@@ -52,27 +57,20 @@ namespace MM.Systems.CraftingSystem
 
             foreach (ItemData _inputData in _craftingRecipe.inElements)
             {
-                foreach (ItemData[] _outDatas in _outItems)
-                    foreach (ItemData _outData in _outDatas)
+                foreach (ItemData[] _newInItemArr in _newInItems)
+                    foreach (ItemData _newInItem in _newInItemArr)
                     {
                         // If outData is emtpy, continue
-                        if (_outData == null || _outData.itemAmount <= 0 || _outData.itemPreset == null)
+                        if (_newInItem == null || _newInItem.itemAmount <= 0 || _newInItem.itemPreset == null)
                             continue;
 
                         // Check if outData equals inputData, if so, decrease amount
-                        if (_outData.itemPreset.Equals(_inputData.itemPreset))
+                        if (_newInItem.itemPreset.Equals(_inputData.itemPreset))
                         {
-                            // Calculate amount
-                            _amt = _outData.itemAmount - _inputData.itemAmount;
+                            _inItemsModified[_currIdx].itemAmount -= _inputData.itemAmount;
 
-                            // Set outData amount
-                            _outData.itemAmount = Mathf.Clamp(_amt, 0, _outData.itemAmount);
-
-                            // If amount less 0, the remaining should be set to modified's data
-                            if (_amt < 0)
-                                _inItemsModified[_currIdx].itemAmount = Mathf.Abs(_amt);
-                            // Else set null
-                            else
+                            // If item is empty, remove
+                            if (_inItemsModified[_currIdx].itemAmount <= 0)
                             {
                                 _inItemsModified[_currIdx] = null;
 
@@ -83,18 +81,17 @@ namespace MM.Systems.CraftingSystem
                 End0:
                 _currIdx++;
             }
-            // If there are required items left, cancel crafting
+            // Return left items
             _inItemsModified.RemoveMissingElements();
-            if (_inItemsModified.Count > 0)
-                return false;
 
-            return true;
+            return _inItemsModified;
         }
 
         /// <summary>
         /// Returns the items left, null if crafting is not possible
         /// </summary>
         /// <returns></returns>
+        [System.Obsolete]
         public static List<ItemData> TryCrafting(CraftingRecipe _craftingRecipe, params ItemData[] _inItems)
         {
             // Get recipe values
@@ -152,6 +149,7 @@ namespace MM.Systems.CraftingSystem
             // Return result
             return _outItems;
         }
+
         /// <summary>
         /// Trys to craft a recipe <paramref name="_craftingRecipe"/> with items <paramref name="_inItems"/> and puts eventual not in original fit items into a List <paramref name="_notFit"/>
         /// Returns the items left, null if crafting is not possible
@@ -195,6 +193,18 @@ namespace MM.Systems.CraftingSystem
                         // Check if outData equals inputData, if so, decrease amount
                         if (_outData.itemPreset.Equals(_inputData.itemPreset))
                         {
+                            int _tmp = _inItemsModified[_currIdx].itemAmount;
+                            _inItemsModified[_currIdx].itemAmount -= _outData.itemAmount;
+                            _outData.itemAmount = Mathf.Clamp(_outData.itemAmount - _tmp, 0, _outData.itemAmount);
+
+                            // If item is empty, remove
+                            if (_inItemsModified[_currIdx].itemAmount <= 0)
+                            {
+                                _inItemsModified[_currIdx] = null;
+
+                                goto End0;
+                            }
+                            /*
                             // Calculate amount
                             _amt = _outData.itemAmount - _inputData.itemAmount;
 
@@ -211,6 +221,7 @@ namespace MM.Systems.CraftingSystem
 
                                 goto End0;
                             }
+                            */
                         }
                     }
                 End0:
