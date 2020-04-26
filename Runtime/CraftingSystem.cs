@@ -278,30 +278,31 @@ namespace MM.Systems.CraftingSystem
 
             // Try to add the items, that were not able to stack
             _outItemsModified.RemoveMissingElements();
-            for (int _total = 0; _total < _craftingRecipe.outElements.Count; _total++)
-            {
-                for (int i = 0; i < _newInItems.Length; i++)
+            if (_outItemsModified.Count > 0)
+                for (int _total = 0; _total < _craftingRecipe.outElements.Count; _total++)
                 {
-                    if (_newInItems[i] == null)
-                        _newInItems[i] = new ItemData[_inItems[i].Length];
-
-                    for (int j = 0; j < _newInItems[i].Length; j++)
+                    for (int i = 0; i < _newInItems.Length; i++)
                     {
-                        // If data is empty put item there
-                        if (_newInItems[i][j] == null || _newInItems[i][j].itemAmount <= 0 || _newInItems[i][j].itemPreset == null)
-                        {
-                            _newInItems[i][j] = _outItemsModified[_total];
-                            _outItemsModified[_total] = null;
+                        if (_newInItems[i] == null)
+                            _newInItems[i] = new ItemData[_inItems[i].Length];
 
-                            _total++;
+                        for (int j = 0; j < _newInItems[i].Length; j++)
+                        {
+                            // If data is empty put item there
+                            if (_newInItems[i][j] == null || _newInItems[i][j].itemAmount <= 0 || _newInItems[i][j].itemPreset == null)
+                            {
+                                _newInItems[i][j] = _outItemsModified[_total];
+                                _outItemsModified[_total] = null;
+
+                                _total++;
+                            }
+                            if (_total >= _outItemsModified.Count)
+                                goto End2;
                         }
-                        if (_total >= _outItemsModified.Count)
-                            goto End2;
                     }
+                End2:
+                    continue;
                 }
-            End2:
-                continue;
-            }
 
             // Put the still remaining items in notFit
             _outItemsModified.RemoveMissingElements();
